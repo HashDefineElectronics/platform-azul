@@ -1,0 +1,26 @@
+{
+    "build": {
+      "extra_flags": "-DHDE_AZUL_SMALL",
+      "cpu": "cortex-m0plus",
+      "f_cpu": "24000000L",
+      "mcu": "SKEAZ64xxx4",
+      "device": "SKEAZ64xxx4"
+    },
+    "debug": {
+      "jlink_device": "SKEAZ64xxx4"
+    },
+    "name": "Azul Small",
+    "frameworks": [
+      "azul"
+    ],
+    "upload": {
+      "maximum_ram_size": 8192,
+      "maximum_size": 65536,
+      "protocol": "jlink",
+      "protocols": [
+        "jlink"
+      ]
+    },
+    "url": "https://www.hashdefineelectronics.com",
+    "vendor": "Hash Define Electronics Ltd"
+  }
