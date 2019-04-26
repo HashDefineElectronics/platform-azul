@@ -1,4 +1,5 @@
 {
+    "name": "Azul Small",
     "build": {
       "extra_flags": "-DHDE_AZUL_SMALL",
       "cpu": "cortex-m0plus",
@@ -9,7 +10,6 @@
     "debug": {
       "jlink_device": "SKEAZ64xxx4"
     },
-    "name": "Azul Small",
     "frameworks": [
       "azul"
     ],

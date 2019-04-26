@@ -1,0 +1,27 @@
+{
+    "name": "CE Central Command",
+    "build": {
+      "extra_flags": "-DSTM32F030x8",
+      "cpu": "cortex-m0",
+      "f_cpu": "48000000L",
+      "mcu": "STM32F030C8",
+      "device": "STM32F030C8"
+    },
+    "debug": {
+      "jlink_device": "STM32F030C8",
+      "openocd_board": "st_nucleo_f0"
+    },
+    "frameworks": [
+      "azul"
+    ],
+    "upload": {
+      "maximum_ram_size": 8192,
+      "maximum_size": 65536,
+      "protocol": "jlink",
+      "protocols": [
+        "jlink"
+      ]
+    },
+    "url": "https://github.com/ContextualElectronics/Central-Command",
+    "vendor": "Contextual Electronics"
+  }
