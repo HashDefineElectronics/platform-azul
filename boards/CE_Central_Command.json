@@ -5,9 +5,9 @@
       "cpu": "cortex-m0",
       "f_cpu": "48000000L",
       "mcu": "STM32F030C8",
-      "device": "stm32f030x8",
-      "startup_file": "startup_stm32f030x8.s",
-      "linker_file": "STM32F030R8_FLASH"
+      "device": "STM32F0",
+      "startup_file": "startup_stm32f030x8.S",
+      "linker_file": "STM32F030R8_FLASH.ld"
     },
     "debug": {
       "jlink_device": "STM32F030C8",
