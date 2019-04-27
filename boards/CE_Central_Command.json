@@ -7,7 +7,11 @@
       "mcu": "STM32F030C8",
       "device": "STM32F0",
       "startup_file": "startup_stm32f030x8.S",
-      "linker_file": "STM32F030R8_FLASH.ld"
+      "linker_file": "STM32F030R8_FLASH.ld",
+      "addition_files" : {
+        "source": [],
+        "header": []
+      }
     },
     "debug": {
       "jlink_device": "STM32F030C8",
