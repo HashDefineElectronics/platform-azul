@@ -10,30 +10,29 @@ FRAMEWORK_DIR = platform.get_package_dir("framework-azul")
 #
 # Get the linker script
 #
-def getLinker(device) :
+def getLinker(buildConfig) :
     
-    ldscript = join(FRAMEWORK_DIR, device, "Source", "gcc", "linker_flash.ld")
+    ldscript = join(FRAMEWORK_DIR, buildConfig.device, "Source", "gcc", "linker", buildConfig.linker_file)
     assert isfile(ldscript)
-    print(ldscript)
     return ldscript
     
 #
 # Hanlde adding addition header search path to our built system
 #
-def getHeaderPath(device) :
+def getHeaderPath(buildConfig) :
 
-    TempPath = [join(FRAMEWORK_DIR, device, "Include")]
+    TempPath = [join(FRAMEWORK_DIR, buildConfig.device, "Include")]
     return TempPath
 
 #
 # This function is a wrapper for adding Source files into LIBS
 #
-def addSourceFileToLib(device, libs) :
+def addSourceFileToLib(buildConfig, libs) :
 
-    StartupPath = join(FRAMEWORK_DIR, device, "Source")
+    StartupPath = join(FRAMEWORK_DIR, buildConfig.device, "Source")
 
     # include the .c startup and .S assembler
-    libs.append(env.BuildLibrary(join("$BUILD_DIR"), StartupPath, src_filter="-<*> +<*.c> +<**/*.s>"))
+    libs.append(env.BuildLibrary(join("$BUILD_DIR"), StartupPath, src_filter="-<*> +<*.c> +<**/" + buildConfig.startup_file + ">"))
 
 
 env.Append(
@@ -63,12 +62,12 @@ env.Append(
         "--specs=nano.specs",
         "--specs=nosys.specs"
     ],
-    CPPPATH=getHeaderPath(env.BoardConfig().get("build.device")),
+    CPPPATH=getHeaderPath(env.BoardConfig().get("build")),
     LIBS=["c", "gcc", "m", "stdc++", "nosys"]
 )
 
 libs = []
-addSourceFileToLib(env.BoardConfig().get("build.device"), libs)
+addSourceFileToLib(env.BoardConfig().get("build"), libs)
 env.Append(LIBS=libs)
 
 if "BOARD" in env:
@@ -84,7 +83,7 @@ if "BOARD" in env:
 env.Append(ASFLAGS=env.get("CCFLAGS", [])[:])
 
 # Use our own linker
-env.Replace(LDSCRIPT_PATH=env.subst(getLinker(env.BoardConfig().get("build.device"))))
+env.Replace(LDSCRIPT_PATH=env.subst(getLinker(env.BoardConfig().get("build"))))
 
 #print('__________________________')
 #print(env.Dump())

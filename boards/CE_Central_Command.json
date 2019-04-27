@@ -5,11 +5,16 @@
       "cpu": "cortex-m0",
       "f_cpu": "48000000L",
       "mcu": "STM32F030C8",
-      "device": "STM32F030C8"
+      "device": "stm32f030x8",
+      "startup_file": "startup_stm32f030x8.s",
+      "linker_file": "STM32F030R8_FLASH"
     },
     "debug": {
       "jlink_device": "STM32F030C8",
-      "openocd_board": "st_nucleo_f0"
+      "openocd_board": "st_nucleo_f0",
+      "onboard_tools": [
+        "stlink"
+      ]
     },
     "frameworks": [
       "azul"
@@ -19,7 +24,8 @@
       "maximum_size": 65536,
       "protocol": "jlink",
       "protocols": [
-        "jlink"
+        "jlink",
+        "stlink"
       ]
     },
     "url": "https://github.com/ContextualElectronics/Central-Command",
