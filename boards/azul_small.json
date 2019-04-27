@@ -7,11 +7,7 @@
       "mcu": "SKEAZ64xxx4",
       "device": "SKEAZ64xxx4",
       "startup_file": "startup_SKEAZ1284.S",
-      "linker_file": "SKEAZ1284_FLASH.ld",
-      "addition_files" : {
-        "source": [],
-        "header": []
-      }
+      "linker_file": "SKEAZ1284_FLASH.ld"
     },
     "debug": {
       "jlink_device": "SKEAZ64xxx4"
