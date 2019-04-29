@@ -82,6 +82,7 @@ if not env.get("PIOFRAMEWORK"):
 
 target_elf = None
 if "nobuild" in COMMAND_LINE_TARGETS:
+    target_elf = join("$BUILD_DIR", "${PROGNAME}.elf")
     target_firm = join("$BUILD_DIR", "${PROGNAME}.bin")
 else:
     target_elf = env.BuildProgram()
@@ -104,8 +105,8 @@ AlwaysBuild(target_size)
 #
 
 upload_protocol = env.subst("$UPLOAD_PROTOCOL")
-debug_server = env.BoardConfig().get("debug.tools", {}).get(
-    upload_protocol, {}).get("server")
+debug_tools = env.BoardConfig().get("debug.tools", {})
+upload_source = target_firm
 upload_actions = []
 
 if upload_protocol.startswith("jlink"):
@@ -138,23 +139,29 @@ if upload_protocol.startswith("jlink"):
         UPLOADCMD='$UPLOADER $UPLOADERFLAGS -CommanderScript "${__jlink_cmd_script(__env__, SOURCE)}"'
     )
     upload_actions = [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]
-
-elif debug_server and debug_server.get("package") == "tool-pyocd":
+elif upload_protocol in debug_tools:
     env.Replace(
-        UPLOADER=join(platform.get_package_dir("tool-pyocd") or "",
-                      "pyocd-flashtool.py"),
-        UPLOADERFLAGS=debug_server.get("arguments", [])[1:],
-        UPLOADCMD='"$PYTHONEXE" "$UPLOADER" $UPLOADERFLAGS $SOURCE'
-    )
-    upload_actions = [
-        env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")
-    ]
+        UPLOADER="openocd",
+        UPLOADERFLAGS=["-s", platform.get_package_dir("tool-openocd") or ""] +
+        debug_tools.get(upload_protocol).get("server").get("arguments", []) + [
+            "-c",
+            "program {$SOURCE} verify reset %s; shutdown;" %
+            env.BoardConfig().get("upload.offset_address", "")
+        ],
+        UPLOADCMD="$UPLOADER $UPLOADERFLAGS")
+
+    if not env.BoardConfig().get("upload").get("offset_address"):
+        upload_source = target_elf
+    upload_actions = [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]
 
 # custom upload tool
+elif upload_protocol == "custom":
+    upload_actions = [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]
+
 else:
     sys.stderr.write("Warning! Unknown upload protocol %s\n" % upload_protocol)
 
-AlwaysBuild(env.Alias("upload", target_firm, upload_actions))
+AlwaysBuild(env.Alias("upload", upload_source, upload_actions))
 
 #
 # Default targets

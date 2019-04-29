@@ -42,6 +42,11 @@
       "optional": false,
       "version": "0.0.1"
     },
+    "tool-openocd": {
+      "type": "uploader",
+      "optional": true,
+      "version": "~2.1000.0"
+    },
     "tool-jlink": {
       "type": "uploader",
       "optional": true,
