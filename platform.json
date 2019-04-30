@@ -47,6 +47,11 @@
       "optional": true,
       "version": "~2.1000.0"
     },
+    "tool-teensy": {
+      "type": "uploader",
+      "optional": true,
+      "version": "<2"
+    },
     "tool-jlink": {
       "type": "uploader",
       "optional": true,

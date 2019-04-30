@@ -15,7 +15,7 @@
 import sys
 from platform import system
 from os import makedirs
-from os.path import isdir, join
+from os.path import isdir, join, isfile
 
 from SCons.Script import (COMMAND_LINE_TARGETS, AlwaysBuild, Builder, Default,
                           DefaultEnvironment)
@@ -80,29 +80,37 @@ if not env.get("PIOFRAMEWORK"):
 # Target: Build executable and linkable firmware
 #
 
-target_elf = None
+target_firm_elf = None
+target_firm_hex = None
 if "nobuild" in COMMAND_LINE_TARGETS:
-    target_elf = join("$BUILD_DIR", "${PROGNAME}.elf")
+    target_firm_elf = join("$BUILD_DIR", "${PROGNAME}.elf")
+    target_firm_hex = join("$BUILD_DIR", "${PROGNAME}.hex")
     target_firm = join("$BUILD_DIR", "${PROGNAME}.bin")
+    print('nobuild')
 else:
-    target_elf = env.BuildProgram()
-    target_firm = env.ElfToBin(join("$BUILD_DIR", "${PROGNAME}"), target_elf)
+    target_firm_elf = env.BuildProgram()
+    target_firm_hex = env.ElfToHex(join("$BUILD_DIR", "${PROGNAME}"), target_firm_elf)
+    target_firm = env.ElfToBin(join("$BUILD_DIR", "${PROGNAME}"), target_firm_elf)
+    print('build')
 
+print(target_firm_hex)
 AlwaysBuild(env.Alias("nobuild", target_firm))
 target_buildprog = env.Alias("buildprog", target_firm, target_firm)
-
 #
 # Target: Print binary size
 #
 
 target_size = env.Alias(
-    "size", target_elf,
+    "size", target_firm_elf,
     env.VerboseAction("$SIZEPRINTCMD", "Calculating size $SOURCE"))
 AlwaysBuild(target_size)
 
 #
 # Target: Upload by default .bin file
 #
+
+if env.subst("$UPLOAD_PROTOCOL") == "teensy-gui" and not isfile( join( platform.get_package_dir("tool-teensy") or "", "teensy_post_compile.exe" if system() == "Windows" else "teensy_post_compile") ):
+    env.Replace(UPLOAD_PROTOCOL="teensy-cli")
 
 upload_protocol = env.subst("$UPLOAD_PROTOCOL")
 debug_tools = env.BoardConfig().get("debug.tools", {})
@@ -151,11 +159,42 @@ elif upload_protocol in debug_tools:
         UPLOADCMD="$UPLOADER $UPLOADERFLAGS")
 
     if not env.BoardConfig().get("upload").get("offset_address"):
-        upload_source = target_elf
+        upload_source = target_firm_elf
     upload_actions = [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]
 
 # custom upload tool
 elif upload_protocol == "custom":
+    upload_actions = [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]
+
+elif upload_protocol == "teensy-cli":
+    env.Replace(
+        REBOOTER="teensy_reboot",
+        UPLOADER="teensy_loader_cli",
+        UPLOADERFLAGS=[
+            "-mmcu=$BOARD_MCU",
+            "-w",  # wait for device to appear
+            "-s",  # soft reboot if device not online
+            "-v"  # verbose output
+        ],
+        UPLOADCMD="$UPLOADER $UPLOADERFLAGS $SOURCES"
+    )
+    upload_actions = [
+        env.VerboseAction("$REBOOTER -s", "Rebooting..."),
+        env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")
+    ]
+    upload_source = target_firm_hex
+elif upload_protocol == "teensy-gui":
+    env.Replace(
+        UPLOADER="teensy_post_compile",
+        UPLOADERFLAGS=[
+            "-file=${PROGNAME}", '-path="$BUILD_DIR"',
+            "-tools=%s" % (platform.get_package_dir("tool-teensy") or ""),
+            "-board=%s" % env.BoardConfig().id.upper(),
+            "-reboot"
+        ],
+        UPLOADCMD="$UPLOADER $UPLOADERFLAGS"
+    )
+    upload_source = target_firm_hex
     upload_actions = [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]
 
 else:
