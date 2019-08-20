@@ -30,6 +30,7 @@ env.Replace(
     CXX="arm-none-eabi-g++",
     GDB="arm-none-eabi-gdb",
     OBJCOPY="arm-none-eabi-objcopy",
+    OBJDUMP="arm-none-eabi-objdump",
     RANLIB="arm-none-eabi-ranlib",
     SIZETOOL="arm-none-eabi-size",
 
@@ -56,7 +57,7 @@ env.Append(
                 "binary",
                 "$SOURCES",
                 "$TARGET"
-            ]), "Building $TARGET"),
+            ]), "Bin Output -> $TARGET"),
             suffix=".bin"
         ),
         ElfToHex=Builder(
@@ -68,8 +69,18 @@ env.Append(
                 ".eeprom",
                 "$SOURCES",
                 "$TARGET"
-            ]), "Building $TARGET"),
+            ]), "Hex Output -> $TARGET"),
             suffix=".hex"
+        ),
+        ObjectDump=Builder(
+            action=env.VerboseAction(" ".join([
+                "$OBJDUMP",
+                "-D",
+                "$SOURCES",
+                ">",
+                "$TARGET"
+            ]), "disassembler Output -> $TARGET"),
+            suffix=".dis"
         )
     )
 )
@@ -82,20 +93,20 @@ if not env.get("PIOFRAMEWORK"):
 
 target_firm_elf = None
 target_firm_hex = None
+object_dump_dis = None
 if "nobuild" in COMMAND_LINE_TARGETS:
     target_firm_elf = join("$BUILD_DIR", "${PROGNAME}.elf")
     target_firm_hex = join("$BUILD_DIR", "${PROGNAME}.hex")
     target_firm = join("$BUILD_DIR", "${PROGNAME}.bin")
-    print('nobuild')
 else:
     target_firm_elf = env.BuildProgram()
     target_firm_hex = env.ElfToHex(join("$BUILD_DIR", "${PROGNAME}"), target_firm_elf)
+    object_dump_dis = env.ObjectDump(join("$BUILD_DIR", "${PROGNAME}"), target_firm_elf)
     target_firm = env.ElfToBin(join("$BUILD_DIR", "${PROGNAME}"), target_firm_elf)
-    print('build')
 
-print(target_firm_hex)
+
 AlwaysBuild(env.Alias("nobuild", target_firm))
-target_buildprog = env.Alias("buildprog", target_firm, target_firm)
+#target_buildprog = env.Alias("buildprog", target_firm)
 #
 # Target: Print binary size
 #
@@ -206,4 +217,8 @@ AlwaysBuild(env.Alias("upload", upload_source, upload_actions))
 # Default targets
 #
 
-Default([target_buildprog, target_size])
+Default([
+        env.Alias("buildprog", target_firm),
+        env.Alias("dumpDis", object_dump_dis),
+        target_size
+        ])

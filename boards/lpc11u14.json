@@ -1,0 +1,33 @@
+{
+    "name": "lpc11u14",
+    "build": {
+      "extra_flags": "",
+      "cpu": "cortex-m0",
+      "f_cpu": "50000000L",
+      "mcu": "lpc11c24",
+      "device": "LPC11U14",
+      "startup_file": "startup_LPC11xx.S",
+      "linker_file": "LPC11U24.ld"
+    },
+    "debug": {
+      "jlink_device": "LPC11C14/301",
+      "openocd_board": "mbed-lpc11u24",
+      "onboard_tools": [
+        "stlink"
+      ]
+    },
+    "frameworks": [
+      "azul"
+    ],
+    "upload": {
+      "maximum_ram_size": 6144,
+      "maximum_size": 32768,
+      "protocol": "stlink",
+      "protocols": [
+        "jlink",
+        "stlink"
+      ]
+    },
+    "url": "https://github.com/ContextualElectronics/Central-Command",
+    "vendor": "Contextual Electronics"
+  }
