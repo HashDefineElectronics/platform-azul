@@ -10,7 +10,7 @@
          "variant": "nrf52_pca10040"
       },
       "device": "NRF52832",
-      "startup_file": "startup_MK64F12.S",
+      "startup_file": "gcc_startup_nrf52.S",
       "linker_file": "nrf52_xxaa.ld"
     },
     "debug": {
