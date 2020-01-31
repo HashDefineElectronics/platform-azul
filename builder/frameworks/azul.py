@@ -1,4 +1,4 @@
-from os.path import isfile, join
+from os.path import isfile, isdir, join
 from SCons.Script import DefaultEnvironment
 
 
@@ -20,9 +20,18 @@ def getLinker() :
 # Hanlde adding addition header search path to our built system
 #
 def getHeaderPath() :
+    
 
     TempPath = [join(FRAMEWORK_DIR, env.BoardConfig().get("build.device"), "Include"),
                 join(FRAMEWORK_DIR, env.BoardConfig().get("build.device"), "Include", "CMSIS")]
+
+    AdditionPath = env.BoardConfig().get("build.includeheaderPaths")
+    if isinstance(AdditionPath, list) :
+        for Item in AdditionPath:
+            Path = join(FRAMEWORK_DIR, env.BoardConfig().get("build.device"), Item)
+            if isdir(Path) :
+                TempPath.append(Path)
+
     return TempPath
 
 #
@@ -31,14 +40,28 @@ def getHeaderPath() :
 def addSourceFileToLib(libs) :
 
     StartupPath = join(FRAMEWORK_DIR, env.BoardConfig().get("build.device"), "Source")
+
     FullStartFilePath = join(StartupPath, "gcc", env.BoardConfig().get("build.startup_file"))
     
     assert isfile(FullStartFilePath), FullStartFilePath + ' - startup_file not found.'
 
-    # include the .c startup and .S assembler
-    libs.append(env.BuildLibrary(join("$BUILD_DIR"), StartupPath, src_filter="-<*> +<*.c> +<gcc/" + env.BoardConfig().get("build.startup_file") + ">"))
-    
+    AdditionSourceFiles = env.BoardConfig().get("build.IncludeSource")
 
+    SourFilter = ""
+
+    if isinstance(AdditionSourceFiles, list):
+        for Item in AdditionSourceFiles:
+            Temp = join(FRAMEWORK_DIR, env.BoardConfig().get("build.device"), Item)
+            if isfile(Temp):
+                SourFilter += " +<%s>" % (Temp)
+    
+    if SourFilter is "":
+        SourFilter = "+<*.c>"
+
+    SourFilter = "-<*> %s +<gcc/%s>" % (SourFilter, env.BoardConfig().get("build.startup_file"))
+
+    # include the .c startup and .S assembler
+    libs.append( env.BuildLibrary(join("$BUILD_DIR"), StartupPath, src_filter=SourFilter) )
 
 env.Append(
     ASFLAGS=["-x", "assembler-with-cpp"],

@@ -1,14 +1,10 @@
 {
     "name": "NRF52 DK NRF52832",
-    "build": {
-      "extra_flags": "",
-      "cpu": "cortex-m4",
-      "f_cpu": "64000000L",
-      "mcu": "nrf52832",
-      "device": "NRF52832",
-      "startup_file": "gcc_startup_nrf52.S",
-      "linker_file": "nrf52_xxaa.ld"
-    },
+    "url": "https://www.HashDefineElectronics.com/",
+    "vendor": "Nordic",
+    "frameworks": [
+      "azul"
+    ],
     "debug": {
       "default_tools": [
         "jlink"
@@ -16,9 +12,6 @@
       "jlink_device": "nRF52832_xxAA",
       "svd_path": "nrf52.svd"
     },
-    "frameworks": [
-      "azul"
-    ],
     "connectivity": [
       "bluetooth"
     ],
@@ -31,6 +24,19 @@
         "nrfjprog"
       ]
     },
-    "url": "https://www.HashDefineElectronics.com/",
-    "vendor": "Nordic"
+    "build": {
+      "extra_flags": "-DNRF52832_XXAA",
+      "cpu": "cortex-m4",
+      "f_cpu": "64000000L",
+      "mcu": "nrf52832",
+      "device": "NRF52832",
+      "startup_file": "gcc_startup_nrf52.S",
+      "linker_file": "nrf52_xxaa.ld",
+      "includeheaderPaths": [
+        "Include/Devices"
+      ],
+      "IncludeSource" : [
+        "Source/system_nrf52.c" 
+      ]
+    }
   }
