@@ -11,9 +11,8 @@
     },
     "debug": {
       "jlink_device": "STM32F030C8",
-      "openocd_board": "st_nucleo_f0",
       "onboard_tools": [
-        "stlink"
+        "jlink"
       ]
     },
     "frameworks": [
@@ -22,10 +21,9 @@
     "upload": {
       "maximum_ram_size": 8192,
       "maximum_size": 65536,
-      "protocol": "stlink",
+      "protocol": "jlink",
       "protocols": [
-        "jlink",
-        "stlink"
+        "jlink"
       ]
     },
     "url": "https://github.com/ContextualElectronics/Central-Command",

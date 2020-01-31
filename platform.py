@@ -68,21 +68,18 @@ class AzulPlatform(PlatformBase):
 
     def _add_default_debug_tools(self, board):
         debug = board.manifest.get("debug", {})
-        upload_protocols = board.manifest.get("upload", {}).get(
-            "protocols", [])
+        upload_protocols = board.manifest.get("upload", {}).get("protocols", [])
+        
         if "tools" not in debug:
             debug['tools'] = {}
 
         # BlackMagic, J-Link, ST-Link
-        for link in ("blackmagic", "jlink", "stlink", "cmsis-dap"):
+        for link in ("nrfjprog", "jlink"):
+
             if link not in upload_protocols or link in debug['tools']:
                 continue
-            if link == "blackmagic":
-                debug['tools']['blackmagic'] = {
-                    "hwids": [["0x1d50", "0x6018"]],
-                    "require_debug_port": True
-                }
-            elif link == "jlink":
+
+            if link == "jlink":
                 assert debug.get("jlink_device"), (
                     "Missed J-Link Device ID for %s" % board.id)
                 debug['tools'][link] = {
@@ -101,35 +98,9 @@ class AzulPlatform(PlatformBase):
                     },
                     "onboard": link in debug.get("onboard_tools", [])
                 }
-            else:
-                server_args = []
-                if debug.get("openocd_board"):
-                    server_args = [
-                        "-f",
-                        "scripts/board/%s.cfg" % debug.get("openocd_board")
-                    ]
-                else:
-                    assert debug.get("openocd_target"), (
-                        "Missed target configuration for %s" % board.id)
-
-                    server_args = [
-                        "-f",
-                        "scripts/interface/%s.cfg" % link, "-c",
-                        "transport select %s" % (
-                            "hla_swd"if link == "stlink" else "swd"),
-                        "-f",
-                        "scripts/target/%s.cfg" % debug.get("openocd_target")
-                    ]
-
-                debug['tools'][link] = {
-                    "server": {
-                        "package": "tool-openocd",
-                        "executable": "bin/openocd",
-                        "arguments": server_args
-                    },
-                    "onboard": link in debug.get("onboard_tools", []),
-                    "default": link in debug.get("default_tools", [])
-                }
+            else :
+                # debugger not supported
+                continue
 
         board.manifest['debug'] = debug
         return board

@@ -11,9 +11,8 @@
     },
     "debug": {
       "jlink_device": "LPC11C14/301",
-      "openocd_board": "mbed-lpc11u24",
       "onboard_tools": [
-        "stlink"
+        "jlink"
       ]
     },
     "frameworks": [
@@ -22,10 +21,9 @@
     "upload": {
       "maximum_ram_size": 6144,
       "maximum_size": 32768,
-      "protocol": "stlink",
+      "protocol": "jlink",
       "protocols": [
-        "jlink",
-        "stlink"
+        "jlink"
       ]
     },
     "url": "https://github.com/ContextualElectronics/Central-Command",

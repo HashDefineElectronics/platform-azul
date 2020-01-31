@@ -28,8 +28,7 @@
       "protocol": "jlink",
       "protocols": [
         "jlink",
-        "nrfjprog",
-        "stlink"
+        "nrfjprog"
       ]
     },
     "url": "https://www.HashDefineElectronics.com/",
