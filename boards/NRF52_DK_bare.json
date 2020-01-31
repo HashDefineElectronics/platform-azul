@@ -1,0 +1,37 @@
+{
+    "name": "NRF52 DK NRF52832",
+    "build": {
+      "extra_flags": "",
+      "cpu": "cortex-m4",
+      "f_cpu": "64000000L",
+      "mcu": "nrf52832",
+      "variant": "nRF52DK",
+      "zephyr": {
+         "variant": "nrf52_pca10040"
+      },
+      "device": "NRF52832",
+      "startup_file": "startup_MK64F12.S",
+      "linker_file": "nrf52_xxaa.ld"
+    },
+    "debug": {
+      "jlink_device": "nRF52832_xxAA"
+    },
+    "frameworks": [
+      "azul"
+    ],
+    "connectivity": [
+      "bluetooth"
+    ],
+    "upload": {
+      "maximum_ram_size": 65536,
+      "maximum_size": 524288,
+      "protocol": "jlink",
+      "protocols": [
+        "jlink",
+        "nrfjprog",
+        "stlink"
+      ]
+    },
+    "url": "https://www.HashDefineElectronics.com/",
+    "vendor": "Nordic"
+  }
