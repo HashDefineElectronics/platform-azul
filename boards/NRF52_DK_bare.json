@@ -31,12 +31,28 @@
       "mcu": "nrf52832",
       "device": "NRF52832",
       "startup_file": "gcc_startup_nrf52.S",
-      "linker_file": "nrf52_xxaa.ld",
+      "linker_file": "nrf52.ld",
       "includeheaderPaths": [
         "Include/Devices"
       ],
       "IncludeSource" : [
         "Source/system_nrf52.c" 
-      ]
+      ],
+      "compiler_flags" : {
+        "CCFLAGS" : [
+          "-mabi=aapcs",
+          "-mfloat-abi=hard",
+          "-mfpu=fpv4-sp-d16",
+          "-ffunction-sections",
+          "-fdata-sections",
+          "-fno-strict-aliasing",
+          "-fno-builtin",
+          "-fshort-enums"
+        ],
+        "LINKFLAGS" : [
+          "-mfloat-abi=hard",
+          "-mfpu=fpv4-sp-d16"
+        ]
+      }
     }
   }

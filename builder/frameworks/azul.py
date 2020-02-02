@@ -70,6 +70,7 @@ env.Append(
         "-ffunction-sections",  # place each function in its own section
         "-fdata-sections",
         "-Wall",
+        "-Werror",
         "-mthumb",
         "-nostdlib"
     ],
@@ -107,6 +108,15 @@ if "BOARD" in env:
             "-mcpu=%s" % env.BoardConfig().get("build.cpu")
         ]
     )
+
+CCFLAGS = env.BoardConfig().get("build.compiler_flags.CCFLAGS")
+if(isinstance(CCFLAGS, list)) :
+    env.Append(CCFLAGS=CCFLAGS)
+
+LINKFLAGS = env.BoardConfig().get("build.compiler_flags.LINKFLAGS")
+if(isinstance(LINKFLAGS, list)) :
+    env.Append(LINKFLAGS=LINKFLAGS)
+
 # copy CCFLAGS to ASFLAGS (-x assembler-with-cpp mode)
 env.Append(ASFLAGS=env.get("CCFLAGS", [])[:])
 
@@ -115,6 +125,9 @@ env.Replace(
     LDSCRIPT_PATH=env.subst(getLinker())
 )
 
-#print('__________________________')
+print('__________________________')
 #print(env.Dump())
-#print('__________________________')
+print(CCFLAGS)
+print('__________________________')
+print(env.get('CCFLAGS'))
+print('__________________________')
