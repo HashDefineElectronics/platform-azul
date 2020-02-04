@@ -26,11 +26,12 @@
     },
     "build": {
       "extra_flags": "-DNRF52832_XXAA",
+      "optimize_flag" : "-Os",
       "cpu": "cortex-m4",
       "f_cpu": "64000000L",
       "mcu": "nrf52832",
       "device": "NRF52832",
-      "startup_file": "gcc_startup_nrf52.S",
+      "startup_file": "linker/gcc_startup_nrf52.S",
       "linker_file": "nrf52.ld",
       "includeheaderPaths": [
         "Include/Devices"

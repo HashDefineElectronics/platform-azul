@@ -57,6 +57,9 @@
       "optional": true,
       "version": "^1.63208.0"
     },
+    "tool-sreccat": {
+      "version": "~1.164.0"
+    },
     "tool-nrfjprog": {
       "type": "uploader",
       "optional": true,

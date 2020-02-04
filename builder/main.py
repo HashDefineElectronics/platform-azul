@@ -43,7 +43,6 @@ env.Replace(
 
     PROGSUFFIX=".elf"
 )
-
 # Allow user to override via pre:script
 if env.get("PROGNAME", "program") == "program":
     env.Replace(PROGNAME="firmware")
@@ -72,6 +71,21 @@ env.Append(
             ]), "Hex Output -> $TARGET"),
             suffix=".hex"
         ),
+        MergeHex=Builder(
+            action=env.VerboseAction(" ".join([
+                join(platform.get_package_dir("tool-sreccat") or "",
+                     "srec_cat"),
+                "$SOFTDEVICEHEX",
+                "-intel",
+                "$SOURCES",
+                "-intel",
+                "-o",
+                "$TARGET",
+                "-intel",
+                "--line-length=44"
+            ]), "Building $TARGET"),
+            suffix=".hex"
+        ),
         ObjectDump=Builder(
             action=env.VerboseAction(" ".join([
                 "$OBJDUMP",
@@ -90,43 +104,36 @@ if not env.get("PIOFRAMEWORK"):
 #
 # Target: Build executable and linkable firmware
 #
-
 target_firm_elf = None
 target_firm_hex = None
 object_dump_dis = None
+
+
 if "nobuild" in COMMAND_LINE_TARGETS:
     target_firm_elf = join("$BUILD_DIR", "${PROGNAME}.elf")
     target_firm_hex = join("$BUILD_DIR", "${PROGNAME}.hex")
     target_firm = join("$BUILD_DIR", "${PROGNAME}.bin")
 else:
     target_firm_elf = env.BuildProgram()
-    target_firm_hex = env.ElfToHex(join("$BUILD_DIR", "${PROGNAME}"), target_firm_elf)
+    
+    if "SOFTDEVICEHEX" in env:
+        target_firm_hex = env.MergeHex(join("$BUILD_DIR", "${PROGNAME}"), env.ElfToHex(join("$BUILD_DIR", "user_${PROGNAME}"), target_firm_elf))
+    else:
+        target_firm_hex = env.ElfToHex(join("$BUILD_DIR", "${PROGNAME}"), target_firm_elf)
+    
     object_dump_dis = env.ObjectDump(join("$BUILD_DIR", "${PROGNAME}"), target_firm_elf)
     target_firm = env.ElfToBin(join("$BUILD_DIR", "${PROGNAME}"), target_firm_elf)
 
 
-AlwaysBuild(env.Alias("nobuild", target_firm))
-#target_buildprog = env.Alias("buildprog", target_firm)
-#
-# Target: Print binary size
-#
-
-target_size = env.Alias(
-    "size", target_firm_elf,
-    env.VerboseAction("$SIZEPRINTCMD", "Calculating size $SOURCE"))
-AlwaysBuild(target_size)
-
 #
 # Target: Upload by default .bin file
 #
-
 if env.subst("$UPLOAD_PROTOCOL") == "teensy-gui" and not isfile( join( platform.get_package_dir("tool-teensy") or "", "teensy_post_compile.exe" if system() == "Windows" else "teensy_post_compile") ):
     env.Replace(UPLOAD_PROTOCOL="teensy-cli")
 
 upload_protocol = env.subst("$UPLOAD_PROTOCOL")
 debug_tools = env.BoardConfig().get("debug.tools", {})
 upload_source = target_firm
-upload_actions = []
 
 if upload_protocol.startswith("jlink"):
 
@@ -157,7 +164,8 @@ if upload_protocol.startswith("jlink"):
         ],
         UPLOADCMD='$UPLOADER $UPLOADERFLAGS -CommanderScript "${__jlink_cmd_script(__env__, SOURCE)}"'
     )
-    upload_actions = [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]
+
+    AlwaysBuild(env.Alias("upload", upload_source, [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]))
 elif upload_protocol in debug_tools:
     env.Replace(
         UPLOADER="openocd",
@@ -171,11 +179,29 @@ elif upload_protocol in debug_tools:
 
     if not env.BoardConfig().get("upload").get("offset_address"):
         upload_source = target_firm_elf
-    upload_actions = [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]
 
+    AlwaysBuild(env.Alias("upload", upload_source, [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]))
 # custom upload tool
 elif upload_protocol == "custom":
-    upload_actions = [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]
+    AlwaysBuild(env.Alias("upload", upload_source, [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]))
+
+elif upload_protocol == "nrfjprog":
+
+    env.Replace(
+    ERASEFLAGS=["--eraseall", "-f", "nrf51"],
+    ERASECMD="nrfjprog $ERASEFLAGS",
+    PROGSUFFIX=".elf")
+    env.Replace(
+        UPLOADER="nrfjprog",
+        UPLOADERFLAGS=[
+            "--v",
+            "--chiperase",
+            "--reset"
+        ],
+        UPLOADCMD="$UPLOADER $UPLOADERFLAGS --program $SOURCE"
+    )
+    AlwaysBuild(env.Alias("erase", None, env.VerboseAction("$ERASECMD", "Erasing...")))
+    AlwaysBuild(env.Alias("upload", target_firm_hex, [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]))
 
 elif upload_protocol == "teensy-cli":
     env.Replace(
@@ -189,11 +215,9 @@ elif upload_protocol == "teensy-cli":
         ],
         UPLOADCMD="$UPLOADER $UPLOADERFLAGS $SOURCES"
     )
-    upload_actions = [
-        env.VerboseAction("$REBOOTER -s", "Rebooting..."),
-        env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")
-    ]
-    upload_source = target_firm_hex
+
+    AlwaysBuild(env.Alias("upload", target_firm_hex, [ env.VerboseAction("$REBOOTER -s", "Rebooting..."), env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE") ]))
+
 elif upload_protocol == "teensy-gui":
     env.Replace(
         UPLOADER="teensy_post_compile",
@@ -205,20 +229,28 @@ elif upload_protocol == "teensy-gui":
         ],
         UPLOADCMD="$UPLOADER $UPLOADERFLAGS"
     )
-    upload_source = target_firm_hex
-    upload_actions = [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]
 
+    AlwaysBuild(env.Alias("upload", target_firm_hex, [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]))
 else:
     sys.stderr.write("Warning! Unknown upload protocol %s\n" % upload_protocol)
 
-AlwaysBuild(env.Alias("upload", upload_source, upload_actions))
+
+AlwaysBuild(env.Alias("nobuild", target_firm))
+
+#target_buildprog = env.Alias("buildprog", target_firm)
+#
+# Target: Print binary size
+#
+
+target_size = env.Alias("size", target_firm_elf, env.VerboseAction("$SIZEPRINTCMD", "Calculating size $SOURCE"))
+AlwaysBuild(target_size)
 
 #
 # Default targets
 #
-
 Default([
         env.Alias("buildprog", target_firm),
+        env.Alias("hex", target_firm_hex),
         env.Alias("dumpDis", object_dump_dis),
         target_size
         ])

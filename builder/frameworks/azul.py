@@ -8,6 +8,17 @@ platform = env.PioPlatform()
 FRAMEWORK_DIR = platform.get_package_dir("framework-azul")
 
 #
+# get the compiler optimizer value. for possible values see https://gcc.gnu.org/onlinedocs/gcc-4.4.7/gcc/Optimize-Options.html
+#
+def getOptimizeFlag() :
+
+    Result = env.BoardConfig().get("build").get("optimize_flag")
+
+    if not Result :
+        Result = "-Os"
+    return Result
+
+#
 # Get the linker script
 #
 def getLinker() :
@@ -25,7 +36,7 @@ def getHeaderPath() :
     TempPath = [join(FRAMEWORK_DIR, env.BoardConfig().get("build.device"), "Include"),
                 join(FRAMEWORK_DIR, env.BoardConfig().get("build.device"), "Include", "CMSIS")]
 
-    AdditionPath = env.BoardConfig().get("build.includeheaderPaths")
+    AdditionPath = env.BoardConfig().get("build").get("includeheaderPaths")
     if isinstance(AdditionPath, list) :
         for Item in AdditionPath:
             Path = join(FRAMEWORK_DIR, env.BoardConfig().get("build.device"), Item)
@@ -45,7 +56,7 @@ def addSourceFileToLib(libs) :
     
     assert isfile(FullStartFilePath), FullStartFilePath + ' - startup_file not found.'
 
-    AdditionSourceFiles = env.BoardConfig().get("build.IncludeSource")
+    AdditionSourceFiles = env.BoardConfig().get("build").get("IncludeSource")
 
     SourFilter = ""
 
@@ -66,13 +77,14 @@ def addSourceFileToLib(libs) :
 env.Append(
     ASFLAGS=["-x", "assembler-with-cpp"],
     CCFLAGS=[
-        "-Os",  # optimize for size
+        getOptimizeFlag(),  # optimize for size
         "-ffunction-sections",  # place each function in its own section
         "-fdata-sections",
         "-Wall",
         "-Werror",
         "-mthumb",
-        "-nostdlib"
+        "-nostdlib",
+        "-Wl,-map"
     ],
 
     CXXFLAGS=[
@@ -85,7 +97,7 @@ env.Append(
     ],
 
     LINKFLAGS=[
-        "-Os",
+        getOptimizeFlag(),
         "-Wl,--gc-sections,--relax",
         "-mthumb",
         "--specs=nano.specs",
@@ -105,17 +117,19 @@ if "BOARD" in env:
             "-mcpu=%s" % env.BoardConfig().get("build.cpu")
         ],
         LINKFLAGS=[
+            "-L%s" % join(FRAMEWORK_DIR, env.BoardConfig().get("build.device"), "Source/gcc/linker"),
             "-mcpu=%s" % env.BoardConfig().get("build.cpu")
         ]
     )
 
-CCFLAGS = env.BoardConfig().get("build.compiler_flags.CCFLAGS")
-if(isinstance(CCFLAGS, list)) :
-    env.Append(CCFLAGS=CCFLAGS)
+if env.BoardConfig().get("build").get("compiler_flags"):
+    CCFLAGS = env.BoardConfig().get("build").get("compiler_flags").get("CCFLAGS")
+    if(isinstance(CCFLAGS, list)) :
+        env.Append(CCFLAGS=CCFLAGS)
 
-LINKFLAGS = env.BoardConfig().get("build.compiler_flags.LINKFLAGS")
-if(isinstance(LINKFLAGS, list)) :
-    env.Append(LINKFLAGS=LINKFLAGS)
+    LINKFLAGS = env.BoardConfig().get("build").get("compiler_flags").get("LINKFLAGS")
+    if(isinstance(LINKFLAGS, list)) :
+        env.Append(LINKFLAGS=LINKFLAGS)
 
 # copy CCFLAGS to ASFLAGS (-x assembler-with-cpp mode)
 env.Append(ASFLAGS=env.get("CCFLAGS", [])[:])
@@ -125,9 +139,13 @@ env.Replace(
     LDSCRIPT_PATH=env.subst(getLinker())
 )
 
-print('__________________________')
-#print(env.Dump())
-print(CCFLAGS)
-print('__________________________')
-print(env.get('CCFLAGS'))
-print('__________________________')
+print(env.get('LINKFLAGS'))
+
+SoftDevicePath = env.BoardConfig().get("build").get('softdevice_path')
+if SoftDevicePath :
+    softdevice_hex_path = join(env.get("PROJECT_SRC_DIR"), "../", SoftDevicePath)
+
+    if softdevice_hex_path and isfile(softdevice_hex_path):
+        env.Append(SOFTDEVICEHEX=softdevice_hex_path)
+    else:
+        print("Warning! softdevice not found " + softdevice_hex_path)
