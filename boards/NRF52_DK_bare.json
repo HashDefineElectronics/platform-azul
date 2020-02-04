@@ -16,9 +16,10 @@
       "bluetooth"
     ],
     "upload": {
-      "maximum_ram_size": 65536,
-      "maximum_size": 524288,
-      "protocol": "jlink",
+      "maximum_ram_size": 54568,
+      "maximum_size": 368640,
+      "offset_address": "0x26000",
+      "protocol": "nrfjprog",
       "protocols": [
         "jlink",
         "nrfjprog"

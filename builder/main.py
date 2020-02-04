@@ -117,10 +117,11 @@ else:
     target_firm_elf = env.BuildProgram()
     
     if "SOFTDEVICEHEX" in env:
-        target_firm_hex = env.MergeHex(join("$BUILD_DIR", "${PROGNAME}"), env.ElfToHex(join("$BUILD_DIR", "user_${PROGNAME}"), target_firm_elf))
-    else:
+        merged_softdevice_hex = env.MergeHex(join("$BUILD_DIR", "${PROGNAME}"), env.ElfToHex(join("$BUILD_DIR", "user_${PROGNAME}"), target_firm_elf))
+        target_firm_hex = join("$BUILD_DIR", "user_${PROGNAME}.hex")
+    else :
         target_firm_hex = env.ElfToHex(join("$BUILD_DIR", "${PROGNAME}"), target_firm_elf)
-    
+
     object_dump_dis = env.ObjectDump(join("$BUILD_DIR", "${PROGNAME}"), target_firm_elf)
     target_firm = env.ElfToBin(join("$BUILD_DIR", "${PROGNAME}"), target_firm_elf)
 
@@ -166,42 +167,48 @@ if upload_protocol.startswith("jlink"):
     )
 
     AlwaysBuild(env.Alias("upload", upload_source, [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]))
-elif upload_protocol in debug_tools:
-    env.Replace(
-        UPLOADER="openocd",
-        UPLOADERFLAGS=["-s", platform.get_package_dir("tool-openocd") or ""] +
-        debug_tools.get(upload_protocol).get("server").get("arguments", []) + [
-            "-c",
-            "program {$SOURCE} verify reset %s; shutdown;" %
-            env.BoardConfig().get("upload.offset_address", "")
-        ],
-        UPLOADCMD="$UPLOADER $UPLOADERFLAGS")
-
-    if not env.BoardConfig().get("upload").get("offset_address"):
-        upload_source = target_firm_elf
-
-    AlwaysBuild(env.Alias("upload", upload_source, [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]))
+#elif upload_protocol in debug_tools:
+#    env.Replace(
+#        UPLOADER="openocd",
+#        UPLOADERFLAGS=["-s", platform.get_package_dir("tool-openocd") or ""] +
+#        debug_tools.get(upload_protocol).get("server").get("arguments", []) + [
+#            "-c",
+#            "program {$SOURCE} verify reset %s; shutdown;" %
+#            env.BoardConfig().get("upload.offset_address", "")
+#        ],
+#        UPLOADCMD="$UPLOADER $UPLOADERFLAGS")
+#
+#    if not env.BoardConfig().get("upload").get("offset_address"):
+#        upload_source = target_firm_elf
+#
+#    AlwaysBuild(env.Alias("upload", upload_source, [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]))
 # custom upload tool
 elif upload_protocol == "custom":
     AlwaysBuild(env.Alias("upload", upload_source, [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]))
 
 elif upload_protocol == "nrfjprog":
 
-    env.Replace(
-    ERASEFLAGS=["--eraseall", "-f", "nrf51"],
-    ERASECMD="nrfjprog $ERASEFLAGS",
-    PROGSUFFIX=".elf")
-    env.Replace(
-        UPLOADER="nrfjprog",
-        UPLOADERFLAGS=[
-            "--v",
-            "--chiperase",
-            "--reset"
-        ],
-        UPLOADCMD="$UPLOADER $UPLOADERFLAGS --program $SOURCE"
-    )
+    env.Replace(    ERASEFLAGS=["--eraseall", "-f", "NRF52"],
+                    ERASECMD="nrfjprog_bin $ERASEFLAGS",
+                    UPLOADER="nrfjprog_bin",
+                    UPLOADERFLAGS=[
+                        "--chiperase",
+                        "--reset"
+                    ],
+                    PARTIAL_UPLOADERFLAGS=[
+                        "--sectoranduicrerase",
+                        "--reset"
+                    ],
+                    UPLOADCMD="$UPLOADER $UPLOADERFLAGS --program $SOURCE",
+                    PARTIAL_UPLOADCMD="$UPLOADER $PARTIAL_UPLOADERFLAGS --program $SOURCE")
     AlwaysBuild(env.Alias("erase", None, env.VerboseAction("$ERASECMD", "Erasing...")))
-    AlwaysBuild(env.Alias("upload", target_firm_hex, [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]))
+
+    if merged_softdevice_hex :
+        AlwaysBuild(env.Alias("upload_softdevice", env.get('SOFTDEVICEHEX'), [env.VerboseAction("$PARTIAL_UPLOADCMD", "Uploading $SOURCE")]))
+        AlwaysBuild(env.Alias("upload", target_firm_hex, [env.VerboseAction("$PARTIAL_UPLOADCMD", "Uploading $SOURCE")]))
+        AlwaysBuild(env.Alias("upload_merged", merged_softdevice_hex, [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]))
+    else :
+        AlwaysBuild(env.Alias("upload", target_firm_hex, [env.VerboseAction("$UPLOADCMD", "Uploading $SOURCE")]))
 
 elif upload_protocol == "teensy-cli":
     env.Replace(
