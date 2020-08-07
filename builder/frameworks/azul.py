@@ -80,8 +80,6 @@ env.Append(
         getOptimizeFlag(),  # optimize for size
         "-ffunction-sections",  # place each function in its own section
         "-fdata-sections",
-        "-Wall",
-        "-Werror",
         "-mthumb",
         "-nostdlib",
         "-Wl,-map"
@@ -143,8 +141,8 @@ print(env.get('LINKFLAGS'))
 
 SoftDevicePath = env.BoardConfig().get("build").get('softdevice_path')
 if SoftDevicePath :
-    softdevice_hex_path = join(env.get("PROJECT_SRC_DIR"), "../", SoftDevicePath)
-
+    softdevice_hex_path = join(env.get("PROJECTSRC_DIR"), "../", SoftDevicePath)
+    
     if softdevice_hex_path and isfile(softdevice_hex_path):
         env.Append(SOFTDEVICEHEX=softdevice_hex_path)
     else:
