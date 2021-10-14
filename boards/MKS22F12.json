@@ -1,0 +1,28 @@
+{
+    "name": "MKS22FN128VLH12 Cortex-M$ Hard-float barebone",
+    "build": {
+      "extra_flags": "-DCPU_MKS22FN128VLH12",
+      "cpu": "cortex-m4",
+      "f_cpu": "120000000L",
+      "mcu": "MKS22F12",
+      "device": "MKS22F12",
+      "startup_file": "startup_mks22f12.c",
+      "linker_file": "MKS22F12_flash.ld"
+    },
+    "debug": {
+      "jlink_device": "MKS22FN128xxx12"
+    },
+    "frameworks": [
+      "azul"
+    ],
+    "upload": {
+      "maximum_ram_size": 65536,
+      "maximum_size": 131072,
+      "protocol": "jlink",
+      "protocols": [
+        "jlink"
+      ]
+    },
+    "url": "https://www.HashDefineElectronics.com/",
+    "vendor": "NXP"
+  }
