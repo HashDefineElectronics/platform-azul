@@ -1,7 +1,7 @@
 {
     "name": "Teensy Bare - MK64Fx512",
     "build": {
-      "extra_flags": "",
+      "extra_flags": "-DCPU_MK64F12",
       "cpu": "cortex-m4",
       "f_cpu": "120000000L",
       "mcu": "mk64fx512",
@@ -10,7 +10,7 @@
       "linker_file": "MK64FX512xxx12_flash.ld"
     },
     "debug": {
-      "jlink_device": "MKS22FN128xxx12",
+      "jlink_device": "MK64FX512xxx12",
       "svd_path": "MK64F12.svd"
     },
     "frameworks": [
