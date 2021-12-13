@@ -23,6 +23,24 @@ from SCons.Script import (COMMAND_LINE_TARGETS, AlwaysBuild, Builder, Default,
 env = DefaultEnvironment()
 platform = env.PioPlatform()
 
+#overides the default upload.maximum_size value which is used to calculate how much of the memory is used up
+if "size" in env.BoardConfig().get("build") and "application_type" in env.GetProjectOptions(as_dict=True):
+        
+    ApplicationType = env.GetProjectOptions(as_dict=True).get("application_type")
+    ProgramSize = env.BoardConfig().get("build.size.full")
+
+    if "boot" == ApplicationType:
+        # use the bootloader linker
+        ProgramSize = env.BoardConfig().get("build.size.boot")
+
+    elif "app" == ApplicationType:
+        ProgramSize = env.BoardConfig().get("build.size.app")
+
+    env.BoardConfig().update("upload.maximum_size", ProgramSize);
+
+
+
+
 env.Replace(
     AR="arm-none-eabi-ar",
     AS="arm-none-eabi-as",

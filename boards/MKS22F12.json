@@ -7,7 +7,14 @@
       "mcu": "MKS22F12",
       "device": "MKS22F12",
       "startup_file": "startup_mks22f12.c",
-      "linker_file": "MKS22F12_flash.ld"
+      "linker_file": "MKS22F12.ld",
+      "linker_file_boot": "MKS22F12_bootloader.ld",
+      "linker_file_app": "MKS22F12_app.ld",
+      "size": {
+        "full" : 131072,
+        "boot" : 8192,
+        "app" : 122880
+      }
     },
     "debug": {
       "jlink_device": "MKS22FN128xxx12"

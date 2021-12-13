@@ -24,6 +24,23 @@ def getOptimizeFlag() :
 def getLinker() :
 
     ldscript = join(FRAMEWORK_DIR, env.BoardConfig().get("build.device"), "Source", "gcc", "linker", env.BoardConfig().get("build.linker_file"))
+    ApplicationType = "full"
+    
+    if not env.GetBuildType() == "debug" and "application_type" in env.GetProjectOptions(as_dict=True):
+
+        ApplicationType = env.GetProjectOptions(as_dict=True).get("application_type")
+
+        if "boot" == ApplicationType:
+            # use the bootloader linker
+            ldscript = join(FRAMEWORK_DIR, env.BoardConfig().get("build.device"), "Source", "gcc", "linker", env.BoardConfig().get("build.linker_file_boot"))
+
+        elif "app" == ApplicationType:
+            # use the app linker
+            ldscript = join(FRAMEWORK_DIR, env.BoardConfig().get("build.device"), "Source", "gcc", "linker", env.BoardConfig().get("build.linker_file_app"))
+    
+    print("LINKER type: {}".format(ApplicationType))
+    print("LINKER: {}".format(ldscript))
+
     assert isfile(ldscript), ldscript + " - linker_file not found."
     return ldscript
     
