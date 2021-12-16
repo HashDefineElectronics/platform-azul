@@ -26,7 +26,8 @@ def getLinker() :
     ldscript = join(FRAMEWORK_DIR, env.BoardConfig().get("build.device"), "Source", "gcc", "linker", env.BoardConfig().get("build.linker_file"))
     ApplicationType = "full"
     
-    if not env.GetBuildType() == "debug" and "application_type" in env.GetProjectOptions(as_dict=True):
+    #if not env.GetBuildType() == "debug" and "application_type" in env.GetProjectOptions(as_dict=True):
+    if "application_type" in env.GetProjectOptions(as_dict=True):
 
         ApplicationType = env.GetProjectOptions(as_dict=True).get("application_type")
 
