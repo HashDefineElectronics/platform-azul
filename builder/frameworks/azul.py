@@ -84,7 +84,7 @@ def addSourceFileToLib(libs) :
             if isfile(Temp):
                 SourFilter += " +<%s>" % (Temp)
     
-    if SourFilter is "":
+    if SourFilter == "":
         SourFilter = "+<*.c>"
 
     SourFilter = "-<*> %s +<gcc/%s>" % (SourFilter, env.BoardConfig().get("build.startup_file"))
