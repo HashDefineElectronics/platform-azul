@@ -7,7 +7,9 @@
       "mcu": "mk64fx512",
       "device": "MK64F12",
       "startup_file": "startup_MK64F12.S",
-      "linker_file": "MK64FX512xxx12_flash.ld"
+      "linker_file": "MK64FX512xxx12_flash.ld",
+      "linker_file_boot": "MK64FX512xxx12_flash_boot.ld",
+      "linker_file_app": "MK64FX512xxx12_flash_app.ld"
     },
     "debug": {
       "jlink_device": "MK64FX512xxx12",

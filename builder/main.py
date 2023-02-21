@@ -270,6 +270,8 @@ AlwaysBuild(env.Alias("nobuild", target_firm))
 target_size = env.Alias("size", target_firm_elf, env.VerboseAction("$SIZEPRINTCMD", "Calculating size $SOURCE"))
 AlwaysBuild(target_size)
 
+
+
 #
 # Default targets
 #
