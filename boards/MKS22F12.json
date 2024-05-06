@@ -10,6 +10,7 @@
       "linker_file": "MKS22F12.ld",
       "linker_file_boot": "MKS22F12_boot.ld",
       "linker_file_app": "MKS22F12_app.ld",
+      "linker_file_appremote": "MKS22F12_appremote.ld",
       "size": {
         "full" : 131072,
         "boot" : 8192,

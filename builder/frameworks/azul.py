@@ -38,7 +38,10 @@ def getLinker() :
         elif "app" == ApplicationType:
             # use the app linker
             ldscript = join(FRAMEWORK_DIR, env.BoardConfig().get("build.device"), "Source", "gcc", "linker", env.BoardConfig().get("build.linker_file_app"))
-    
+        elif "appremote" == ApplicationType:
+            # use the app linker
+            ldscript = join(FRAMEWORK_DIR, env.BoardConfig().get("build.device"), "Source", "gcc", "linker", env.BoardConfig().get("build.linker_file_appremote"))
+
     print("LINKER type: {}".format(ApplicationType))
     print("LINKER: {}".format(ldscript))
 
